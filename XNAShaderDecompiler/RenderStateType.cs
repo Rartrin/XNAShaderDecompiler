@@ -1,6 +1,6 @@
 ﻿namespace XNAShaderDecompiler
 {
-    public enum RenderStateType
+    public enum RenderStateType:uint
     {
         /* Note that we are NOT using the actual RS values from D3D here.
          * For some reason, in the binary data, it's 0-based.

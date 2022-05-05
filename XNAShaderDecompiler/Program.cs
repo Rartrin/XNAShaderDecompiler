@@ -25,14 +25,13 @@ namespace XNAShaderDecompiler
             //try
             //{
                 Console.WriteLine("Reading XNB...");
-                Effect effect = ContentManager.ReadAsset<Effect>(inputFile);
+                byte[] effectCode = ContentManager.ReadAsset(inputFile);
                 
                 //Console.WriteLine("Writing FXB...");
                 //File.WriteAllBytes(outputFile, effect.EffectCode);
                 
                 Console.WriteLine("Parsing FXB...");
-                EffectParser parser = new EffectParser(effect);
-                parser.Parse();
+                var effect = EffectParser.Parse(effectCode);
 
                 Console.WriteLine("Done!");
             //}

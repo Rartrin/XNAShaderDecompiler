@@ -1,16 +1,11 @@
-﻿namespace XNAShaderDecompiler
+﻿using System.Collections.Generic;
+
+namespace XNAShaderDecompiler
 {
     public class Effect
     {
-        public byte[] EffectCode
-        {
-            get;
-            private set;
-        }
-        
-        public Effect(byte[] effectCode)
-        {
-            EffectCode = effectCode;
-        }
+        public EffectParam[] Params;
+		public EffectTechnique[] Techniques;
+		public EffectObject[] Objects;
     }
 }

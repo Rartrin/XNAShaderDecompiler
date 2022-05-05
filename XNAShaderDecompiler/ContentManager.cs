@@ -26,12 +26,12 @@ namespace XNAShaderDecompiler
             'l', // Linux (deprecated for DesktopGL)
         };
 
-        public static T ReadAsset<T>(string file)
+        public static byte[] ReadAsset(string file)
         {
             byte[] xnbHeader = new byte[4];
             using Stream stream = File.OpenRead(file);
 
-            object result = null;
+            byte[] result = null;
             
             stream.Read(xnbHeader, 0, xnbHeader.Length);
             if (xnbHeader[0] == 'X' &&
@@ -39,17 +39,15 @@ namespace XNAShaderDecompiler
                 xnbHeader[2] == 'B' &&
                 targetPlatformIdentifiers.Contains((char) xnbHeader[3]))
             {
-                using (BinaryReader br = new BinaryReader(stream))
-                using (ContentReader reader = GetContentReaderFromXNB(file, stream, br, (char) xnbHeader[3]))
-                {
-                    result = reader.ReadAsset<T>();
-                }
+                using BinaryReader br = new BinaryReader(stream);
+                using BinaryReader contentReader = GetContentReaderFromXNB(file, stream, br, (char) xnbHeader[3]);
+                result = ReadAsset(contentReader);
             }
 
-            return (T) result;
+            return result;
         }
 
-        private static ContentReader GetContentReaderFromXNB(string name, Stream stream, BinaryReader br, char platform)
+        private static BinaryReader GetContentReaderFromXNB(string name, Stream stream, BinaryReader br, char platform)
         {
             byte version = br.ReadByte();
             byte flags = br.ReadByte();
@@ -60,7 +58,7 @@ namespace XNAShaderDecompiler
             }
 
             int len = br.ReadInt32();
-            ContentReader reader;
+            BinaryReader reader;
             if (compressed)
             {
                 int compressedSize = len - 14;
@@ -122,31 +120,35 @@ namespace XNAShaderDecompiler
                 
                 if (decompressedStream.Position != decompressedSize)
                 {
-                    throw new ContentLoadException(
-                        "Decompression of " + name + " failed. "
-                    );
+                    throw new ContentLoadException($"Decompression of {name} failed.");
                 }
                 decompressedStream.Seek(0, SeekOrigin.Begin);
-                reader = new ContentReader(
-                    //this,
-                    decompressedStream,
-                    name,
-                    version,
-                    platform
-                );
+                reader = new BinaryReader(decompressedStream);
             }
             else
             {
-                reader = new ContentReader(
-                    //this,
-                    stream,
-                    name,
-                    version,
-                    platform
-                );
+                reader = new BinaryReader(stream);
             }
 
             return reader;
+        }
+
+        public static byte[] ReadAsset(BinaryReader reader)
+        {
+            int numberOfReaders = reader.Read7BitEncodedInt();
+            for (int i = 0; i < numberOfReaders; i++)
+            {
+                string originalReaderTypeString = reader.ReadString();
+                reader.ReadInt32();
+            }
+            int sharedResourceCount = reader.Read7BitEncodedInt();
+
+            int typeReaderIndex = reader.Read7BitEncodedInt();
+            if (typeReaderIndex == 0)
+                return null;
+            
+            int length = reader.ReadInt32();
+            return reader.ReadBytes(length);
         }
     }
 }

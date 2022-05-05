@@ -32,15 +32,9 @@ namespace XNAShaderDecompiler
             }
 		}
         
-        public void Skip<T>() where T:unmanaged
-        {
-            index += (uint)sizeof(T);
-        }
+        public void Skip<T>() where T:unmanaged => Skip((uint)sizeof(T));
 
-        public void Skip(uint length)
-        {
-            index += length;
-        }
+        public void Skip(uint length) => index += length;
 
         public byte[] ReadBytes(uint count)
         {
